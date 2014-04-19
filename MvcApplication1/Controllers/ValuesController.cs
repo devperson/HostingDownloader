@@ -11,18 +11,9 @@ namespace MvcApplication1.Controllers
 {
     public class ValuesController : ApiController
     {
-        // GET api/<controller>
-        public IEnumerable<FilePart> Get()
-        {
-            List<FilePart> files = new List<FilePart>();
-            files.Add(new FilePart { Bytes = new byte[] { 1, 2, 3 }, FileName = "music.avi", Part = 3, Id = 4 });
-            files.Add(new FilePart { Bytes = new byte[] { 1, 2, 3 }, FileName = "music.avi", Part = 4, Id = 5 });
-            return files;
-        }
-
-        // GET api/<controller>/5
-        [ActionNameAttribute("First")]
-        public dynamic GetFirstAvailablePart()
+        // GET api/values/AnyPart
+        [ActionNameAttribute("AnyPart")]
+        public dynamic AnyPart()
         {
             using (DataBaseContext context = new DataBaseContext())
             {
@@ -34,13 +25,19 @@ namespace MvcApplication1.Controllers
             }            
         }
 
-        // POST api/<controller>
+        // POST api/values/AddPart
         [ActionNameAttribute("AddPart")]
         public void Post(FilePart newPart)
         {
+            using (DataBaseContext context = new DataBaseContext())
+            {
+                context.Parts.Add(newPart);
+                context.SaveChanges();
+            }
         }
 
-         [ActionNameAttribute("RemovePart")]
+        // POST api/values/RemovePart/{id}
+        [ActionNameAttribute("RemovePart")]
         public void Delete(int id)
         {
             using (DataBaseContext context = new DataBaseContext())
