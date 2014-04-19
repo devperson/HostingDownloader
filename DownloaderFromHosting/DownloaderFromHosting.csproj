@@ -96,6 +96,10 @@
       <Project>{eab95997-2276-42a3-b1e5-37402ace9875}</Project>
       <Name>CommonLibrary</Name>
     </ProjectReference>
+    <ProjectReference Include="..\DataAccess.Models\DataAccess.Models.csproj">
+      <Project>{91fe73b0-599e-4af1-9d12-53d7fa9a975b}</Project>
+      <Name>DataAccess.Models</Name>
+    </ProjectReference>
     <ProjectReference Include="..\DataAccess\DataAccess.csproj">
       <Project>{9fb18bdb-eeaa-47ec-b5d4-c234727d7c90}</Project>
       <Name>DataAccess</Name>

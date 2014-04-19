@@ -1,5 +1,5 @@
-﻿using CommonLibrary.Models;
-using DataAccess;
+﻿using DataAccess;
+using DataAccess.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;

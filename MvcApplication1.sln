@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommonLibrary", "CommonLibr
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataAccess", "DataAccess\DataAccess.csproj", "{9FB18BDB-EEAA-47EC-B5D4-C234727D7C90}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataAccess.Models", "DataAccess.Models\DataAccess.Models.csproj", "{91FE73B0-599E-4AF1-9D12-53D7FA9A975B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -37,6 +39,10 @@ Global
 		{9FB18BDB-EEAA-47EC-B5D4-C234727D7C90}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9FB18BDB-EEAA-47EC-B5D4-C234727D7C90}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9FB18BDB-EEAA-47EC-B5D4-C234727D7C90}.Release|Any CPU.Build.0 = Release|Any CPU
+		{91FE73B0-599E-4AF1-9D12-53D7FA9A975B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{91FE73B0-599E-4AF1-9D12-53D7FA9A975B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{91FE73B0-599E-4AF1-9D12-53D7FA9A975B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{91FE73B0-599E-4AF1-9D12-53D7FA9A975B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
