@@ -43,7 +43,9 @@ namespace CommonLibrary
         {            
             await Task.Run(() =>
             {
-                var restResponse = this.Client.Execute(new RestRequest("/api/values/AddPart", Method.POST));
+                var req = new RestRequest("/api/values/AddPart", Method.POST);
+                req.AddBody(part);
+                this.Client.Execute(req);
             });
 
             onCompleted();

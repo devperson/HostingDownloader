@@ -17,7 +17,7 @@ namespace MvcApplication1.Controllers
         {
             using (DataBaseContext context = new DataBaseContext())
             {
-                var part = context.Parts.SingleOrDefault();
+                var part = context.Parts.FirstOrDefault();
                 if (part != null)
                     return part;
                 else
