@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DownloaderFromHosting.ViewModel;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -22,6 +23,12 @@ namespace DownloaderFromHosting
         public MainWindow()
         {
             InitializeComponent();
+            this.Loaded += MainWindow_Loaded;
+        }
+
+        void MainWindow_Loaded(object sender, RoutedEventArgs e)
+        {
+            this.DataContext = new MainViewModel();
         }
     }
 }
