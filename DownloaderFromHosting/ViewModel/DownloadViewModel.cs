@@ -122,6 +122,7 @@ namespace DownloaderFromHosting.ViewModel
         private void OnStartCommand()
         {
             hubClient = new WPFHubClient(Constants.Host, Clients.Downloader, OnMessageRecieved);
+            hubClient.SendMessage(new MsgData { From = Clients.Downloader, To = Clients.Uploader, Message = Messages.DownloadingAppReady });
             this.IsStartVisible = false;
             this.IsPauseVisible = true;
             this.IsProgressVisible = true;
@@ -174,6 +175,7 @@ namespace DownloaderFromHosting.ViewModel
                     }
                 });
             }
+
             if (data.Message.Contains(Messages.DownloadAvailable))
             {
                 long partId = long.Parse(data.Message.Replace(Messages.DownloadAvailable, ""));
@@ -181,7 +183,7 @@ namespace DownloaderFromHosting.ViewModel
                 {
                     if (part != null)
                     {
-                        service.RemovePart(part.Id);
+                        //service.RemovePart(part.Id);
                         using (DataBaseContext context = new DataBaseContext())
                         {
                             part.Id = 0;
@@ -192,6 +194,14 @@ namespace DownloaderFromHosting.ViewModel
                         this.CalcProgress();
                     }
                 });
+            }
+
+            if (data.Message == Messages.UploadingAppLoaded)
+            {
+                if (IsStartVisible == false) // notify uploader about downloader ready state.
+                {
+                    hubClient.SendMessage(new MsgData { From = Clients.Downloader, To = Clients.Uploader, Message = Messages.DownloadingAppReady });
+                }
             }
         }
 

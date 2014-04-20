@@ -67,12 +67,12 @@ namespace MvcApplication1.Controllers
         {
             using (DataBaseContext context = new DataBaseContext())
             {
-                var part = context.Parts.FirstOrDefault(p => !p.IsTaken && p.Id == id);
+                var part = context.Parts.FirstOrDefault(p => p.Id == id);
                 if (part != null)
                 {
                     Debug.WriteLine("{0} part taking", part.Part);
-
-                    part.IsTaken = true;
+                    
+                    context.Parts.Remove(part);
                     context.SaveChanges();
 
                     //if (context.Parts.Count(t => !t.IsTaken) < 2)
@@ -101,22 +101,25 @@ namespace MvcApplication1.Controllers
             }
         }
 
-        // POST api/values/RemovePart/{id}
-        [HttpDelete]
-        [ActionNameAttribute("RemovePart")]
-        public void Delete(long id)
-        {
-            using (DataBaseContext context = new DataBaseContext())
-            {
-                var part = context.Parts.FirstOrDefault(p => p.Id == id);
-                if (part != null)
-                {                    
-                    context.Parts.Remove(part);
-                    context.SaveChanges();
-                    Debug.WriteLine("{0} part removed", part.Part);
-                }
-            }
-        }
+
+        //// POST api/values/RemovePart/{id}
+        //[HttpDelete]
+        //[ActionNameAttribute("RemovePart")]
+        //public void Delete(long id)
+        //{
+        //    using (DataBaseContext context = new DataBaseContext())
+        //    {
+        //        var part = context.Parts.FirstOrDefault(p => p.Id == id);
+        //        if (part != null)
+        //        {                    
+        //            context.Parts.Remove(part);
+        //            context.SaveChanges();
+        //            Debug.WriteLine("{0} part removed", part.Part);
+        //        }
+        //    }
+        //}
+
+
 
         [HttpDelete]
         [ActionNameAttribute("ClearDb")]
@@ -130,11 +133,5 @@ namespace MvcApplication1.Controllers
             }
         }
 
-
-        //private void SendMsg(string to, string msg)
-        //{
-            
-            
-        //}
     }
 }

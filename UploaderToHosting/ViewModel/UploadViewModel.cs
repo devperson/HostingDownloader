@@ -13,50 +13,55 @@ namespace UploaderToHosting.ViewModel
 {
     public class UploadViewModel : ObservableObject
     {
+        private const int UploadingCount = 5;
+        private const long PartSize = 1024 * 1024; //1 mb
+
         public UploadViewModel()
-        {            
+        {
+            Extenssions.InvokeAfterSec(0.1, () =>
+            {
+                hubClient = new WPFHubClient(Constants.Host, Clients.Uploader, OnMessageRecieved);
+                hubClient.SendMessage(new MsgData { From = Clients.Uploader, To = Clients.Downloader, Message = Messages.UploadingAppLoaded });
+            });
             this.IsBrawseVisible = true;                        
         }
 
-        #region Properties
-        
-        int uploadingCount = 8;
-        long partSize = 1024 * 1024;
-
+        #region Properties        
         int currentPartIndex = 0;
         DataAccess.Models.FileInfo file;
         WPFHubClient hubClient;
         ApiService service = new ApiService();
         public bool isPaused = false;
-        object locking = new object();
-        int sendCount = 0;
+        object locking = new object();        
 
-        private string fname;
+        private string _fileInfo;
         public string FilePath
         {
             get
             {
-                return this.fname;
+                return this._fileInfo;
             }
             set
             {
-                this.fname = value;
+                this._fileInfo = value;
                 this.RaisePropertyChanged(p => p.FilePath);
             }
         }
-        private bool brawseVisible;
+
+        private bool _isBrawseVisible;
         public bool IsBrawseVisible
         {
             get
             {
-                return this.brawseVisible;
+                return this._isBrawseVisible;
             }
             set
             {
-                this.brawseVisible = value;
+                this._isBrawseVisible = value;
                 this.RaisePropertyChanged(p => p.IsBrawseVisible);
             }
         }
+
         private bool isStartVisible;
         public bool IsStartVisible
         {
@@ -70,19 +75,21 @@ namespace UploaderToHosting.ViewModel
                 this.RaisePropertyChanged(p => p.IsStartVisible);
             }
         }
-        private int prog;
+
+        private int _progress;
         public int Progress
         {
             get
             {
-                return this.prog;
+                return this._progress;
             }
             set
             {
-                this.prog = value;
+                this._progress = value;
                 this.RaisePropertyChanged(p => p.Progress);
             }
         }
+
         private bool isFin;
         public bool IsFinished
         {
@@ -97,17 +104,60 @@ namespace UploaderToHosting.ViewModel
                 this.IsProgressVisible = false;
             }
         }
-        private bool ispr;
+
+        private bool _isProgressVisible;
         public bool IsProgressVisible
         {
             get
             {
-                return this.ispr;
+                return this._isProgressVisible;
             }
             set
             {
-                this.ispr = value;
+                this._isProgressVisible = value;
                 this.RaisePropertyChanged(p => p.IsProgressVisible);
+            }
+        }
+
+        private bool _isReady;
+        public bool IsReady
+        {
+            get
+            {
+                return this._isReady;
+            }
+            set
+            {
+                this._isReady = value;
+                this.RaisePropertyChanged(p => p.IsReady);
+            }
+        }
+
+        private bool _isReadyVisible;
+        public bool IsReadyMessageVisible
+        {
+            get
+            {
+                return this._isReadyVisible;
+            }
+            set
+            {
+                this._isReadyVisible = value;
+                this.RaisePropertyChanged(p => p.IsReadyMessageVisible);                
+            }            
+        }
+
+        private bool _isErrorVisible = true;
+        public bool IsErrorMessageVisible
+        {
+            get
+            {
+                return this._isErrorVisible;
+            }
+            set
+            {
+                this._isErrorVisible = value;
+                this.RaisePropertyChanged(p => p.IsErrorMessageVisible);
             }
         }
         #endregion
@@ -127,7 +177,7 @@ namespace UploaderToHosting.ViewModel
             {
                 this.FilePath = dlg.FileName;
                 file = new DataAccess.Models.FileInfo();
-                file.PartSize = partSize;
+                file.PartSize = PartSize;
                 file.FileName = Path.GetFileName(this.FilePath);
                 using (var fs = new FileStream(this.FilePath, FileMode.Open, FileAccess.Read))
                 {
@@ -152,15 +202,14 @@ namespace UploaderToHosting.ViewModel
             get { return _startCommand ?? (_startCommand = new RelayCommand(OnStartCommand)); }
         }
         private void OnStartCommand()
-        {
-            hubClient = new WPFHubClient(Constants.Host, Clients.Uploader, OnMessageRecieved);
+        {            
             this.StartUpload(true);
             this.IsStartVisible = false;
+            this.IsReadyMessageVisible = false;
             this.IsProgressVisible = true;
-        }
+        }       
         #endregion        
         #endregion
-
 
         #region Methods      
         /// <summary>
@@ -170,11 +219,12 @@ namespace UploaderToHosting.ViewModel
         {
             if (postFileInfo)
                 service.UploadFileInfo(file, () => { });
-            for (int i = 0; i < uploadingCount; i++)
+            for (int i = 0; i < UploadingCount; i++)
             {
                 this.UploadPart();
             }
         }
+
         /// <summary>
         /// Uploads part
         /// </summary>
@@ -193,7 +243,8 @@ namespace UploaderToHosting.ViewModel
                         part.Bytes = this.ReadFile();
                         service.UploadPart(part, () =>
                         {
-                            this.CalcProgress();
+                            this.Progress = (currentPartIndex * 100) / file.PartsCount;
+
                             this.UploadPart();
                         });
                     }
@@ -201,13 +252,7 @@ namespace UploaderToHosting.ViewModel
                         this.IsFinished = true;
                 }
             }
-        }
-
-        private void CalcProgress()
-        {
-            sendCount++;
-            this.Progress = (sendCount * 100) / file.PartsCount;
-        }
+        }       
 
         private void OnMessageRecieved(MsgData data)
         {
@@ -220,7 +265,13 @@ namespace UploaderToHosting.ViewModel
             {
                 Debug.WriteLine("Unpaused");
                 this.isPaused = false;
-                this.StartUpload();
+                //this.StartUpload();
+            }
+            if (data.Message == Messages.DownloadingAppReady)
+            {
+                this.IsReady = true;
+                this.IsReadyMessageVisible = true;
+                this.IsErrorMessageVisible = false;
             }
         }
 

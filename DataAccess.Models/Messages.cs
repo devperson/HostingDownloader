@@ -11,5 +11,9 @@ namespace DataAccess.Models
         public static string DownloadAvailable = "DownloadAvailable";
         public static string ContinueUploading = "ContinueUploading";
         public static string PauseUploading = "PauseUploading";
+
+
+        public static string UploadingAppLoaded = "UploadingAppLoaded";
+        public static string DownloadingAppReady = "DownloadingAppReady";
     }
 }

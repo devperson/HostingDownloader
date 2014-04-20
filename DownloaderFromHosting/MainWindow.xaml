@@ -17,7 +17,7 @@
     		<TextBlock HorizontalAlignment="Center" TextWrapping="Wrap" Text="{Binding Progress}" VerticalAlignment="Bottom" Margin="0,0,0,17"/>
     	</Grid>
     	<StackPanel Orientation="Horizontal" Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,17,0,0">
-    		<Button Command="{Binding StartCommand}" Visibility="{Binding IsStartVisible, Converter={StaticResource BooleanToVisibilityConverter}}" Content="Start Download" HorizontalAlignment="Right" VerticalAlignment="Top" Width="120" Height="30"/>
+    		<Button Command="{Binding StartCommand}" Visibility="{Binding IsStartVisible, Converter={StaticResource BooleanToVisibilityConverter}}" Content="Start" HorizontalAlignment="Right" VerticalAlignment="Top" Width="120" Height="30"/>
     		<Button Visibility="{Binding IsPauseVisible, Converter={StaticResource BooleanToVisibilityConverter}}" Content="Pause" Width="75" Height="30"/>
     		<Button Visibility="{Binding IsRestartVisible, Converter={StaticResource BooleanToVisibilityConverter}}"  Content="Restart" Width="75" Height="30"/>        
     	</StackPanel>
