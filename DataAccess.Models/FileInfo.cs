@@ -9,8 +9,8 @@ namespace DataAccess.Models
     {
         public long Id { get; set; }
         public string FileName { get; set; }
-        public int PartSize { get; set; }
-        public int LastPartSize { get; set; }
-        public int PartsCount { get; set; }
+        public long PartSize { get; set; }
+        public long LastPartSize { get; set; }
+        public int PartsCount { get; set; }        
     }
 }

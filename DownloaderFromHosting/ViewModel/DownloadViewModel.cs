@@ -11,21 +11,25 @@ using System.Threading.Tasks;
 
 namespace DownloaderFromHosting.ViewModel
 {
-    public class MainViewModel : ObservableObject
+    public class DownloadViewModel : ObservableObject
     {
-        public MainViewModel()
+        public DownloadViewModel()
         {
             this.IsPauseVisible = false;
             this.IsRestartVisible = false;
             this.IsStartVisible = true;
+
+            
         }
+
+        #region Properties
         WPFHubClient hubClient;
         ApiService service = new ApiService();
         DataAccess.Models.FileInfo file;
         int downloadedCount;
         object locking = new object();
 
-        #region Properties
+        
         private int _progress;
         public int Progress
         {
@@ -78,6 +82,33 @@ namespace DownloaderFromHosting.ViewModel
                 this.RaisePropertyChanged(p => p.IsRestartVisible);
             }
         }
+        private bool isFin;
+        public bool IsFinished
+        {
+            get
+            {
+                return this.isFin;
+            }
+            set
+            {
+                this.isFin = value;
+                this.RaisePropertyChanged(p => p.IsFinished);
+                this.IsProgressVisible = false;
+            }
+        }
+        private bool ispr;
+        public bool IsProgressVisible
+        {
+            get
+            {
+                return this.ispr;
+            }
+            set
+            {
+                this.ispr = value;
+                this.RaisePropertyChanged(p => p.IsProgressVisible);
+            }
+        }
         #endregion
 
         #region Commands
@@ -93,34 +124,73 @@ namespace DownloaderFromHosting.ViewModel
             hubClient = new WPFHubClient(Constants.Host, Clients.Downloader, OnMessageRecieved);
             this.IsStartVisible = false;
             this.IsPauseVisible = true;
+            this.IsProgressVisible = true;
+        }
+        #endregion
+
+        #region ClearLocalDbCommand
+        private RelayCommand _clearLocalDbCommand;
+        public RelayCommand ClearLocalDbCommand
+        {
+            get { return _clearLocalDbCommand ?? (_clearLocalDbCommand = new RelayCommand(OnClearLocalDbCommand)); }
+        }
+
+        private void OnClearLocalDbCommand()
+        {
+            using (DataBaseContext context = new DataBaseContext())
+            {
+                var objCtx = ((System.Data.Entity.Infrastructure.IObjectContextAdapter)context).ObjectContext;
+                objCtx.ExecuteStoreCommand("TRUNCATE TABLE [Parts]");
+                objCtx.ExecuteStoreCommand("TRUNCATE TABLE [Files]");
+            }
+        }
+        #endregion
+
+        #region ClearRemoteDbCommand
+        private RelayCommand _clearRemoteDbCommand;
+        public RelayCommand ClearRemoteDbCommand
+        {
+            get { return _clearRemoteDbCommand ?? (_clearRemoteDbCommand = new RelayCommand(OnClearRemoteDbCommand)); }
+        }
+
+        private void OnClearRemoteDbCommand()
+        {
+            service.ClearDb();
         }
         #endregion
         #endregion
 
+        #region Methods
         private void OnMessageRecieved(MsgData data)
         {
             if (data.Message == Messages.FileInfoAvailable)
-            {
+            {                
                 service.GetFileInfo((fi) =>
                 {
-                    service.RemoveFileInfo(fi.Id);
-                    file = fi;                                        
+                    if (fi != null)
+                    {
+                        file = fi;
+                        service.RemoveFileInfo(file.Id);
+                    }
                 });
             }
-            if (data.Message == Messages.DownloadAvailable)
-            {              
-                service.GetAnyPart((part) =>
-                {                    
-                    var id = part.Id;
-                    service.RemovePart(id);                    
-                    using (DataBaseContext context = new DataBaseContext())
+            if (data.Message.Contains(Messages.DownloadAvailable))
+            {
+                long partId = long.Parse(data.Message.Replace(Messages.DownloadAvailable, ""));
+                service.GetPart(partId, (part) =>
+                {
+                    if (part != null)
                     {
-                        part.Id = 0;
-                        context.Parts.Add(part);
-                        context.SaveChanges();                       
-                    }
+                        service.RemovePart(part.Id);
+                        using (DataBaseContext context = new DataBaseContext())
+                        {
+                            part.Id = 0;
+                            context.Parts.Add(part);
+                            context.SaveChanges();
+                        }
 
-                    this.CalcProgress();                    
+                        this.CalcProgress();
+                    }
                 });
             }
         }
@@ -135,23 +205,30 @@ namespace DownloaderFromHosting.ViewModel
                     this.Progress = (downloadedCount * 100) / file.PartsCount;
 
                     if (downloadedCount == file.PartsCount)
+                    {
                         this.CreateFile();
+
+                        this.IsFinished = true;
+                        this.IsPauseVisible = false;
+                        this.IsRestartVisible = false;
+                        this.IsStartVisible = false;
+                    }
                 }
             }
         }
 
         private async void CreateFile()
-        {
+        {            
             await Task.Run(() =>
             {
-                if (Directory.Exists("Downloads"))
+                if (!Directory.Exists("Downloads"))
                     Directory.CreateDirectory("Downloads");
                 var path = string.Format(@"Downloads\{0}", file.FileName);
                 using (var context = new DataBaseContext())
                 {
                     int iteration = 0;
                     var portion = context.Parts.OrderBy(p => p.Part).Skip(0).Take(5).ToList();
-
+                    portion.Reverse();
 
                     while (portion.Any())
                     {
@@ -162,21 +239,23 @@ namespace DownloaderFromHosting.ViewModel
                             using (var fs = new FileStream(path, FileMode.OpenOrCreate, FileAccess.Write))
                             {
                                 using (BinaryWriter writer = new BinaryWriter(fs))
-                                {
-                                    //writer.Seek((int)(position * data.Count()), SeekOrigin.Begin);
+                                {                                    
                                     writer.Seek((int)((p.Part - 1) * file.PartSize), SeekOrigin.Begin);
                                     writer.Write(p.Bytes, 0, p.Bytes.Count());
                                 }
                             }
                         }
                         iteration++;
-                        portion = context.Parts.OrderBy(p => p.Part).Skip(5 * iteration).Take(5).Reverse().ToList();
+                        portion = context.Parts.OrderBy(p => p.Part).Skip(5 * iteration).Take(5).ToList();
+                        portion.Reverse();
                     }
 
+                    //var objCtx = ((System.Data.Entity.Infrastructure.IObjectContextAdapter)context).ObjectContext;
+                    //objCtx.ExecuteStoreCommand("TRUNCATE TABLE [Parts]");
+                    //objCtx.ExecuteStoreCommand("TRUNCATE TABLE [Files]");
                 }
             });
         }
-
-        
+        #endregion
     }
 }

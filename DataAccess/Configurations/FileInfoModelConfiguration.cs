@@ -12,7 +12,7 @@ namespace DataAccess.Configurations
         public FileInfoModelConfiguration()
         {
             HasKey(x => x.Id);
-            ToTable("File");
+            ToTable("Files");
         }
     }
 }

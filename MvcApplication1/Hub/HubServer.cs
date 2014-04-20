@@ -29,7 +29,7 @@ namespace MvcApplication1
         {
             string name = Context.QueryString["name"];
 
-            if (string.IsNullOrEmpty(name))
+            if (!string.IsNullOrEmpty(name))
                 _connections.Remove(name, Context.ConnectionId);
 
             return base.OnDisconnected();

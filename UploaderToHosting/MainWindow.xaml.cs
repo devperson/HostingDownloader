@@ -11,6 +11,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using UploaderToHosting.ViewModel;
 
 namespace UploaderToHosting
 {
@@ -22,6 +23,12 @@ namespace UploaderToHosting
         public MainWindow()
         {
             InitializeComponent();
+            this.Loaded += MainWindow_Loaded;
+        }
+
+        private void MainWindow_Loaded(object sender, RoutedEventArgs e)
+        {
+            this.DataContext = new UploadViewModel();
         }
     }
 }

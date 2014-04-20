@@ -28,7 +28,7 @@ namespace DownloaderFromHosting
 
         void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
-            this.DataContext = new MainViewModel();
+            this.DataContext = new DownloadViewModel();
         }
     }
 }
