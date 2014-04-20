@@ -1,19 +1,23 @@
 ﻿<Window x:Class="DownloaderFromHosting.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="MainWindow" Height="350" Width="525">
+        Title="MainWindow" Height="190" Width="525">
+	<Window.Resources>
+		<BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+	</Window.Resources>
     <Grid>
     	<Grid.RowDefinitions>
     		<RowDefinition Height="Auto"/>
     		<RowDefinition/>
     	</Grid.RowDefinitions>
     	<Grid Height="100" VerticalAlignment="Top">
-    		<ProgressBar HorizontalAlignment="Center" Height="25" VerticalAlignment="Center" Width="278"/>
-    		<TextBlock HorizontalAlignment="Center" TextWrapping="Wrap" Text="TextBlock" VerticalAlignment="Bottom" Margin="0,0,0,17"/>
+    		<ProgressBar Value="{Binding Progress}" HorizontalAlignment="Center" Height="25" VerticalAlignment="Center" Width="278"/>
+    		<TextBlock HorizontalAlignment="Center" TextWrapping="Wrap" Text="{Binding Progress}" VerticalAlignment="Bottom" Margin="0,0,0,17"/>
     	</Grid>
     	<StackPanel Orientation="Horizontal" Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,17,0,0">
-    		<Button Content="Start" HorizontalAlignment="Right" VerticalAlignment="Top" Width="75"/>
-        
+    		<Button Command="{Binding StartCommand}" Visibility="{Binding IsStartVisible, Converter={StaticResource BooleanToVisibilityConverter}}" Content="Start" HorizontalAlignment="Right" VerticalAlignment="Top" Width="75"/>
+    		<Button Visibility="{Binding IsPauseVisible, Converter={StaticResource BooleanToVisibilityConverter}}" Content="Pause" Width="75"/>
+    		<Button Visibility="{Binding IsRestartVisible, Converter={StaticResource BooleanToVisibilityConverter}}"  Content="Restart" Width="75"/>        
     	</StackPanel>
         
     </Grid>

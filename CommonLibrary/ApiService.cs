@@ -11,25 +11,57 @@ namespace CommonLibrary
 {
     public class ApiService
     {
-        public RestClient Client;
-        public static string HostUrl { get; set; }
-
-        static ApiService()
-        {
-            HostUrl = "http://localhost:55578";
-        }
+        RestClient client;                
 
         public ApiService()
         {            
-            this.Client = new RestClient(HostUrl);
-            this.Client.AddDefaultHeader("Accept", "application/json");
+            this.client = new RestClient(Constants.Host);
+            this.client.AddDefaultHeader("Accept", "application/json");
         }
+
+
+        public async void GetFileInfo(Action<FileInfo> onCompleted)
+        {
+            var result = await Task.Run<FileInfo>(() =>
+            {
+                var restResponse = this.client.Execute(new RestRequest("/api/values/GetFileInfo", Method.GET));
+                if (restResponse.Content != "null")
+                    return JsonConvert.DeserializeObject<FileInfo>(restResponse.Content);
+                else
+                    return null;
+            });
+
+            onCompleted(result);
+        }
+
+        public async void UploadFileInfo(FileInfo file, Action onCompleted)
+        {
+            await Task.Run(() =>
+            {
+                var req = new RestRequest("/api/values/PostFileInfo", Method.POST);
+                req.AddBody(file);
+                this.client.Execute(req);
+            });
+
+            onCompleted();
+        }
+
+        public async void RemoveFileInfo(long id, Action onCompleted = null)
+        {
+            await Task.Run(() =>
+            {
+                this.client.Execute(new RestRequest(string.Format("/api/values/RemoveFileInfo/{0}", id), Method.DELETE));
+            });
+            if (onCompleted != null)
+                onCompleted();
+        }      
+
 
         public async void GetAnyPart(Action<FilePart> onCompleted)
         {
             var result = await Task.Run<FilePart>(() =>
             {
-                var restResponse = this.Client.Execute(new RestRequest("/api/values/AnyPart", Method.GET));
+                var restResponse = this.client.Execute(new RestRequest("/api/values/AnyPart", Method.GET));
                 if (restResponse.Content != "null")
                     return JsonConvert.DeserializeObject<FilePart>(restResponse.Content);
                 else
@@ -45,20 +77,20 @@ namespace CommonLibrary
             {
                 var req = new RestRequest("/api/values/AddPart", Method.POST);
                 req.AddBody(part);
-                this.Client.Execute(req);
+                this.client.Execute(req);
             });
 
             onCompleted();
         }
 
-        public async void RemovePart(int id, Action onCompleted)
+        public async void RemovePart(long id, Action onCompleted = null)
         {
             await Task.Run(() =>
             {
-                this.Client.Execute(new RestRequest(string.Format("/api/values/RemovePart/{0}", id), Method.DELETE));
+                this.client.Execute(new RestRequest(string.Format("/api/values/RemovePart/{0}", id), Method.DELETE));
             });
-
-            onCompleted();
-        }
+            if (onCompleted != null)
+                onCompleted();
+        }       
     }
 }

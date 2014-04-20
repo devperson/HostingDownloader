@@ -1,0 +1,39 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
+  <metadata>
+    <id>GalaSoftTest</id>
+    <version>0.0.13</version>
+    <title />
+    <authors>Laurent Bugnion</authors>
+    <owners>Laurent Bugnion</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Test only, do not use</description>
+    <copyright>Copyright 2013 Laurent Bugnion (GalaSoft)</copyright>
+    <dependencies>
+      <group targetFramework=".NETFramework3.5">
+        <dependency id="MvvmLightLibs" version="4.1.27.0" />
+      </group>
+      <group targetFramework=".NETFramework4.0">
+        <dependency id="MvvmLightLibs" version="4.1.27.0" />
+      </group>
+      <group targetFramework=".NETFramework4.5">
+        <dependency id="MvvmLightLibs" version="4.1.27.0" />
+      </group>
+      <group targetFramework="Silverlight4.0">
+        <dependency id="MvvmLightLibs" version="4.1.27.0" />
+      </group>
+      <group targetFramework="Silverlight5.0">
+        <dependency id="MvvmLightLibs" version="4.1.27.0" />
+      </group>
+      <group targetFramework="WindowsPhone7.1">
+        <dependency id="MvvmLightLibs" version="4.1.27.0" />
+      </group>
+      <group targetFramework="WindowsPhone8.0">
+        <dependency id="MvvmLightLibs" version="4.1.27.0" />
+      </group>
+      <group targetFramework="Windows0.0">
+        <dependency id="MvvmLightLibs" version="4.1.27.0" />
+      </group>
+    </dependencies>
+  </metadata>
+</package>

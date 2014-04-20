@@ -26,9 +26,12 @@ namespace DataAccess
         {
             base.OnModelCreating(modelBuilder);
 
-            modelBuilder.Configurations.Add(new FilePartModelConfiguration());            
+            modelBuilder.Configurations.Add(new FilePartModelConfiguration());
+            modelBuilder.Configurations.Add(new FileInfoModelConfiguration());        
         }
 
-        public DbSet<FilePart> Parts { get; set; }        
+        public DbSet<FilePart> Parts { get; set; }
+        public DbSet<FileInfo> Files { get; set; }
+
     }
 }
