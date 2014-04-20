@@ -11,6 +11,7 @@ namespace MvcApplication1.Controllers
 {
     public class ValuesController : ApiController
     {
+        
         // GET api/values/AnyPart
         [ActionNameAttribute("AnyPart")]
         public dynamic AnyPart()
@@ -19,7 +20,11 @@ namespace MvcApplication1.Controllers
             {
                 var part = context.Parts.FirstOrDefault();
                 if (part != null)
+                {
+                    part.IsTaken = true;
+                    context.SaveChanges();
                     return part;
+                }
                 else
                     return null;
             }            
@@ -30,9 +35,16 @@ namespace MvcApplication1.Controllers
         public void Post(FilePart newPart)
         {
             using (DataBaseContext context = new DataBaseContext())
-            {
+            {                
                 context.Parts.Add(newPart);
                 context.SaveChanges();
+
+                if (context.Parts.Count() > 8)
+                    this.SendMsg(Clients.Uploader, Messages.PauseUploading);
+                else
+                    this.SendMsg(Clients.Downloader, Messages.ContinueUploading);
+
+                this.SendMsg(Clients.Downloader, Messages.DownloadAvailable);
             }
         }
 
@@ -46,6 +58,12 @@ namespace MvcApplication1.Controllers
                 context.Parts.Remove(part);
                 context.SaveChanges();
             }
+        }
+
+        private void SendMsg(string to, string msg)
+        {
+            HubClient c = new HubClient(this.Request.RequestUri.Host, Clients.Server);
+            c.SendMessage(new MsgData { From = Clients.Server, To = to, Message = msg });
         }
     }
 }

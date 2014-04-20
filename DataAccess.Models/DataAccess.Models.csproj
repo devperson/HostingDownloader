@@ -41,6 +41,7 @@
   <ItemGroup>
     <Compile Include="Clients.cs" />
     <Compile Include="FilePart.cs" />
+    <Compile Include="Messages.cs" />
     <Compile Include="MsgData.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

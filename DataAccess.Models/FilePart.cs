@@ -11,5 +11,7 @@ namespace DataAccess.Models
         public string FileName { get; set; }
         public byte[] Bytes { get; set; }
         public int Part { get; set; }
+        public bool IsTaken { get; set; }
+        public bool IsLast { get; set; }
     }
 }

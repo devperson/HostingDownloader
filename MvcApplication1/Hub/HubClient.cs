@@ -16,7 +16,7 @@ namespace MvcApplication1
         {
             this.ClientName = clientName;
             connection = new HubConnection(host, string.Format("name={0}", this.ClientName));
-            IHubProxy serverHub = connection.CreateHubProxy("HubServer");
+            serverHub = connection.CreateHubProxy("HubServer");
             serverHub.On<MsgData>("Send", OnMessageRecived);
             connection.Start();
         }        
@@ -24,6 +24,7 @@ namespace MvcApplication1
 
         private void OnMessageRecived(MsgData data)
         {
+            
         }
 
         /// <summary>
@@ -33,6 +34,7 @@ namespace MvcApplication1
         public void SendMessage(MsgData data)
         {
             serverHub.Invoke("send", new object[] { data });
+            connection.Disconnect();
         }
     }
 }

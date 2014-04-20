@@ -14,7 +14,9 @@ namespace CommonLibrary
         IHubProxy serverHub;
         string ClientName;
         string HostUrl;
-        public WPFHubClient(string host, string clientName)
+        Action<MsgData> Callback;
+
+        public WPFHubClient(string host, string clientName, Action<MsgData> callback)
         {
             this.HostUrl = host;
             this.ClientName = clientName;            
@@ -24,14 +26,10 @@ namespace CommonLibrary
         private async void Connect()
         {
             connection = new HubConnection(this.HostUrl, string.Format("name={0}", this.ClientName));
-            IHubProxy serverHub = connection.CreateHubProxy("HubServer");
-            serverHub.On<MsgData>("Send", OnMessageRecived);
+            serverHub = connection.CreateHubProxy("HubServer");
+            serverHub.On<MsgData>("Send", Callback);
             await connection.Start();
-        }
-
-        private void OnMessageRecived(MsgData data)
-        {
-        }
+        }       
 
 
         /// <summary>
