@@ -3,6 +3,18 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="MainWindow" Height="350" Width="525">
     <Grid>
+    	<Grid.RowDefinitions>
+    		<RowDefinition Height="Auto"/>
+    		<RowDefinition/>
+    	</Grid.RowDefinitions>
+    	<Grid Height="100" VerticalAlignment="Top">
+    		<ProgressBar HorizontalAlignment="Center" Height="25" VerticalAlignment="Center" Width="278"/>
+    		<TextBlock HorizontalAlignment="Center" TextWrapping="Wrap" Text="TextBlock" VerticalAlignment="Bottom" Margin="0,0,0,17"/>
+    	</Grid>
+    	<StackPanel Orientation="Horizontal" Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,17,0,0">
+    		<Button Content="Start" HorizontalAlignment="Right" VerticalAlignment="Top" Width="75"/>
+        
+    	</StackPanel>
         
     </Grid>
 </Window>
