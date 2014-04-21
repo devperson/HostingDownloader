@@ -77,7 +77,7 @@ namespace CommonLibrary
         public async void UploadPart(FilePart part, Action onCompleted)
         {
             await Task.Run(() =>
-            {
+            {                
                 var req = new RestRequest("/api/values/AddPart", Method.POST);
                 req.RequestFormat = DataFormat.Json;
                 req.AddBody(part);
@@ -87,15 +87,7 @@ namespace CommonLibrary
             onCompleted();
         }
 
-        //public async void RemovePart(long id, Action onCompleted = null)
-        //{
-        //    await Task.Run(() =>
-        //    {
-        //        this.client.Execute(new RestRequest(string.Format("/api/values/RemovePart/{0}", id), Method.DELETE));
-        //    });
-        //    if (onCompleted != null)
-        //        onCompleted();
-        //}
+       
 
         public async void ClearDb(Action onCompleted = null)
         {

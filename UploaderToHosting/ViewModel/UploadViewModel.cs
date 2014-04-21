@@ -31,7 +31,7 @@ namespace UploaderToHosting.ViewModel
         DataAccess.Models.FileInfo file;
         WPFHubClient hubClient;
         ApiService service = new ApiService();
-        public bool isPaused = false;
+        
         object locking = new object();        
 
         private string _fileInfo;
@@ -102,6 +102,7 @@ namespace UploaderToHosting.ViewModel
                 this.isFin = value;
                 this.RaisePropertyChanged(p => p.IsFinished);
                 this.IsProgressVisible = false;
+                this.IsUploading = false;
             }
         }
 
@@ -160,6 +161,34 @@ namespace UploaderToHosting.ViewModel
                 this.RaisePropertyChanged(p => p.IsErrorMessageVisible);
             }
         }
+
+        private bool _isPaused;
+        public bool IsPaused
+        {
+            get
+            {
+                return this._isPaused;
+            }
+            set
+            {
+                this._isPaused = value;
+                this.RaisePropertyChanged(p => p.IsPaused);
+            }
+        }
+
+        private bool _isUpload;
+        public bool IsUploading
+        {
+            get
+            {
+                return this._isUpload;
+            }
+            set
+            {
+                this._isUpload = value;
+                this.RaisePropertyChanged(p => p.IsUploading);
+            }
+        }
         #endregion
 
         #region Commands
@@ -207,6 +236,7 @@ namespace UploaderToHosting.ViewModel
             this.IsStartVisible = false;
             this.IsReadyMessageVisible = false;
             this.IsProgressVisible = true;
+            this.IsUploading = true;
         }       
         #endregion        
         #endregion
@@ -230,9 +260,9 @@ namespace UploaderToHosting.ViewModel
         /// </summary>
         private void UploadPart()
         {
-            lock (locking)
-            {
-                if (!this.isPaused)
+            //lock (locking)
+            //{
+                if (!this.IsPaused)
                 {
                     ++currentPartIndex;
                     if (file.PartsCount >= currentPartIndex)
@@ -251,7 +281,7 @@ namespace UploaderToHosting.ViewModel
                     else
                         this.IsFinished = true;
                 }
-            }
+            //}
         }       
 
         private void OnMessageRecieved(MsgData data)
@@ -259,12 +289,14 @@ namespace UploaderToHosting.ViewModel
             if (data.Message == Messages.PauseUploading)
             {
                 Debug.WriteLine("Paused");
-                this.isPaused = true;
+                this.IsPaused = true;
+                this.IsUploading = false;
             }
             if (data.Message == Messages.ContinueUploading)
             {
                 Debug.WriteLine("Unpaused");
-                this.isPaused = false;
+                this.IsPaused = false;
+                this.IsUploading = true;
                 //this.StartUpload();
             }
             if (data.Message == Messages.DownloadingAppReady)

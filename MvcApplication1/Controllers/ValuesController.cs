@@ -69,16 +69,9 @@ namespace MvcApplication1.Controllers
             {
                 var part = context.Parts.FirstOrDefault(p => p.Id == id);
                 if (part != null)
-                {
-                    Debug.WriteLine("{0} part taking", part.Part);
-                    
+                {                    
                     context.Parts.Remove(part);
-                    context.SaveChanges();
-
-                    //if (context.Parts.Count(t => !t.IsTaken) < 2)
-                    //    c.SendMessage(new MsgData { From = Clients.Server, To = Clients.Uploader, Message = Messages.ContinueUploading });
-                    //else
-                    //    c.SendMessage(new MsgData { From = Clients.Server, To = Clients.Uploader, Message = Messages.PauseUploading });
+                    context.SaveChanges();                  
 
                     return part;
                 }
@@ -94,31 +87,15 @@ namespace MvcApplication1.Controllers
         {
             using (DataBaseContext context = new DataBaseContext())
             {
-                context.Parts.Add(newPart);
-                Debug.WriteLine(string.Format("{0} parts on server", context.Parts.Count()));
-                context.SaveChanges();                
+                context.Parts.Add(newPart);                
+                context.SaveChanges();     
+           
                 c.SendMessage(new MsgData { From = Clients.Server, To = Clients.Downloader, Message = string.Format("{0}{1}", newPart.Id, Messages.DownloadAvailable) });
+
+                if (context.Parts.Count() > 16)
+                    c.SendMessage(new MsgData { From = Clients.Server, To = Clients.Uploader, Message = Messages.PauseUploading });                
             }
         }
-
-
-        //// POST api/values/RemovePart/{id}
-        //[HttpDelete]
-        //[ActionNameAttribute("RemovePart")]
-        //public void Delete(long id)
-        //{
-        //    using (DataBaseContext context = new DataBaseContext())
-        //    {
-        //        var part = context.Parts.FirstOrDefault(p => p.Id == id);
-        //        if (part != null)
-        //        {                    
-        //            context.Parts.Remove(part);
-        //            context.SaveChanges();
-        //            Debug.WriteLine("{0} part removed", part.Part);
-        //        }
-        //    }
-        //}
-
 
 
         [HttpDelete]

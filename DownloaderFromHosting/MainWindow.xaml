@@ -14,7 +14,7 @@
         
     	<Grid Height="93" VerticalAlignment="Top" Visibility="{Binding IsProgressVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
     		<ProgressBar Value="{Binding Progress}" HorizontalAlignment="Center" Height="25" VerticalAlignment="Center" Width="278"/>
-    		<TextBlock HorizontalAlignment="Center" TextWrapping="Wrap" Text="{Binding Progress}" VerticalAlignment="Bottom" Margin="0,0,0,17"/>
+    		<TextBlock HorizontalAlignment="Center" TextWrapping="Wrap" Text="{Binding Progress, StringFormat='\{0\}%'}" VerticalAlignment="Bottom" Margin="0,0,0,10" FontSize="13.333" FontWeight="Bold"/>
     	</Grid>
     	<StackPanel Orientation="Horizontal" Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,17,0,0">
     		<Button Command="{Binding StartCommand}" Visibility="{Binding IsStartVisible, Converter={StaticResource BooleanToVisibilityConverter}}" Content="Start" HorizontalAlignment="Right" VerticalAlignment="Top" Width="120" Height="30"/>

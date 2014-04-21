@@ -1,6 +1,7 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR;
 using DataAccess.Models;
+using System.Diagnostics;
 
 namespace MvcApplication1
 {
@@ -19,7 +20,7 @@ namespace MvcApplication1
         public override Task OnConnected()
         {
             string name = Context.QueryString["name"];
-
+            Debug.WriteLine(string.Format("{0} Connected", name));
             _connections.Add(name, Context.ConnectionId);
 
             return base.OnConnected();
@@ -28,7 +29,7 @@ namespace MvcApplication1
         public override Task OnDisconnected()
         {
             string name = Context.QueryString["name"];
-
+            Debug.WriteLine(string.Format("{0} Disconnected", name));
             if (!string.IsNullOrEmpty(name))
                 _connections.Remove(name, Context.ConnectionId);
 
