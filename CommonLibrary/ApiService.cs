@@ -77,7 +77,8 @@ namespace CommonLibrary
         public async void UploadPart(FilePart part, Action onCompleted)
         {
             await Task.Run(() =>
-            {                
+            {
+                //Thread.Sleep(TimeSpan.FromSeconds(5));
                 var req = new RestRequest("/api/values/AddPart", Method.POST);
                 req.RequestFormat = DataFormat.Json;
                 req.AddBody(part);

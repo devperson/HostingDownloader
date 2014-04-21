@@ -12,18 +12,18 @@ namespace MvcApplication1.Controllers
 {
     public class ValuesController : ApiController
     {
-        HubClient c = new HubClient(Constants.Host, Clients.Server);
-        object locking = new object();
+        static HubClient c = new HubClient(Constants.Host, Clients.Server);        
+
         //GET api/values/GetFileInfo
         [HttpGet]
         [ActionNameAttribute("GetFileInfo")]
         public FileInfo GetFileInfo()
-        {
+        {            
             using (DataBaseContext context = new DataBaseContext())
             {
                 var f = context.Files.FirstOrDefault();
                 if (f != null)
-                {                   
+                {
                     return f;
                 }
                 return null;
@@ -34,20 +34,20 @@ namespace MvcApplication1.Controllers
         [HttpPost]
         [ActionNameAttribute("PostFileInfo")]        
         public void PostFileInfo(FileInfo info)
-        {
+        {            
             using (DataBaseContext context = new DataBaseContext())
             {
                 context.Files.Add(info);
-                context.SaveChanges();                
-                c.SendMessage(new MsgData { From = Clients.Server, To = Clients.Downloader, Message = Messages.FileInfoAvailable });                
+                context.SaveChanges();
             }
+            c.SendMessage(new MsgData { From = Clients.Server, To = Clients.Downloader, Message = Messages.FileInfoAvailable });       
         }
 
         // DELTE api/values/RemoveFileInfo/{id}
         [HttpDelete]
         [ActionNameAttribute("RemoveFileInfo")]        
         public void DeleteFileInfo(long id)
-        {
+        {            
             using (DataBaseContext context = new DataBaseContext())
             {
                 var file = context.Files.FirstOrDefault(p => p.Id == id);
@@ -69,31 +69,34 @@ namespace MvcApplication1.Controllers
             {
                 var part = context.Parts.FirstOrDefault(p => p.Id == id);
                 if (part != null)
-                {                    
+                {
                     context.Parts.Remove(part);
-                    context.SaveChanges();                  
-
+                    context.SaveChanges();
+                    if (!context.Parts.Any())
+                        c.SendMessage(new MsgData { From = Clients.Server, To = Clients.Uploader, Message = Messages.ContinueUploading });   
                     return part;
                 }
                 else
                     return null;
             }            
+
+
         }
 
         // POST api/values/AddPart
         [HttpPost]
         [ActionNameAttribute("AddPart")]        
         public void Post(FilePart newPart)
-        {
+        {            
             using (DataBaseContext context = new DataBaseContext())
             {
-                context.Parts.Add(newPart);                
-                context.SaveChanges();     
-           
+                context.Parts.Add(newPart);
+                context.SaveChanges();
+
                 c.SendMessage(new MsgData { From = Clients.Server, To = Clients.Downloader, Message = string.Format("{0}{1}", newPart.Id, Messages.DownloadAvailable) });
 
-                if (context.Parts.Count() > 16)
-                    c.SendMessage(new MsgData { From = Clients.Server, To = Clients.Uploader, Message = Messages.PauseUploading });                
+                if (context.Parts.Count() > 8)
+                    c.SendMessage(new MsgData { From = Clients.Server, To = Clients.Uploader, Message = Messages.PauseUploading });
             }
         }
 

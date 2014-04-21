@@ -109,6 +109,34 @@ namespace DownloaderFromHosting.ViewModel
                 this.RaisePropertyChanged(p => p.IsProgressVisible);
             }
         }
+
+        private int _dwCount;
+        public int DownloadingThreadsCount
+        {
+            get
+            {
+                return this._dwCount;
+            }
+            set
+            {
+                this._dwCount = value;
+                this.RaisePropertyChanged(p => p.DownloadingThreadsCount);
+            }
+        }
+
+        private bool _isCreatingFile;
+        public bool IsCreatingFile
+        {
+            get
+            {
+                return this._isCreatingFile;                
+            }
+            set
+            {
+                this._isCreatingFile = value;
+                this.RaisePropertyChanged(p => p.IsCreatingFile);
+            }
+        }
         #endregion
 
         #region Commands
@@ -178,9 +206,11 @@ namespace DownloaderFromHosting.ViewModel
 
             if (data.Message.Contains(Messages.DownloadAvailable))
             {
+                this.DownloadingThreadsCount++;
                 long partId = long.Parse(data.Message.Replace(Messages.DownloadAvailable, ""));
                 service.GetPart(partId, (part) =>
                 {
+                    this.DownloadingThreadsCount--;
                     if (part != null)
                     {
                         //service.RemovePart(part.Id);
@@ -228,43 +258,50 @@ namespace DownloaderFromHosting.ViewModel
         }
 
         private async void CreateFile()
-        {            
+        {
+            this.IsCreatingFile = true;
             await Task.Run(() =>
             {
                 if (!Directory.Exists("Downloads"))
                     Directory.CreateDirectory("Downloads");
                 var path = string.Format(@"Downloads\{0}", file.FileName);
+                List<FilePart> portion = new List<FilePart>();
+                int iteration = 0;
+
                 using (var context = new DataBaseContext())
                 {
-                    int iteration = 0;
-                    var portion = context.Parts.OrderBy(p => p.Part).Skip(0).Take(5).ToList();
+                    portion = context.Parts.OrderBy(p => p.Part).Skip(0).Take(5).ToList();
                     portion.Reverse();
-
-                    while (portion.Any())
+                }
+                while (portion.Any())
+                {
+                    var stack = new Stack<FilePart>(portion);
+                    while (stack.Any())
                     {
-                        var stack = new Stack<FilePart>(portion);
-                        while (stack.Any())
+                        var p = stack.Pop();
+                        using (var fs = new FileStream(path, FileMode.OpenOrCreate, FileAccess.Write))
                         {
-                            var p = stack.Pop();
-                            using (var fs = new FileStream(path, FileMode.OpenOrCreate, FileAccess.Write))
+                            using (BinaryWriter writer = new BinaryWriter(fs))
                             {
-                                using (BinaryWriter writer = new BinaryWriter(fs))
-                                {                                    
-                                    writer.Seek((int)((p.Part - 1) * file.PartSize), SeekOrigin.Begin);
-                                    writer.Write(p.Bytes, 0, p.Bytes.Count());
-                                }
+                                writer.Seek((int)((p.Part - 1) * file.PartSize), SeekOrigin.Begin);
+                                writer.Write(p.Bytes, 0, p.Bytes.Count());
                             }
                         }
-                        iteration++;
+                    }
+                    iteration++;
+                    using (var context = new DataBaseContext())
+                    {
                         portion = context.Parts.OrderBy(p => p.Part).Skip(5 * iteration).Take(5).ToList();
                         portion.Reverse();
                     }
-
-                    //var objCtx = ((System.Data.Entity.Infrastructure.IObjectContextAdapter)context).ObjectContext;
-                    //objCtx.ExecuteStoreCommand("TRUNCATE TABLE [Parts]");
-                    //objCtx.ExecuteStoreCommand("TRUNCATE TABLE [Files]");
                 }
+
+                //var objCtx = ((System.Data.Entity.Infrastructure.IObjectContextAdapter)context).ObjectContext;
+                //objCtx.ExecuteStoreCommand("TRUNCATE TABLE [Parts]");
+                //objCtx.ExecuteStoreCommand("TRUNCATE TABLE [Files]");
+
             });
+            this.IsCreatingFile = false;
         }
         #endregion
     }

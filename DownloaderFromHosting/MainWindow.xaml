@@ -1,30 +1,37 @@
-﻿<Window x:Class="DownloaderFromHosting.MainWindow"
+﻿<Window
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit" x:Class="DownloaderFromHosting.MainWindow"
         Title="Downloader" Height="190" Width="606" WindowStyle="ToolWindow">
 	<Window.Resources>
 		<BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
 	</Window.Resources>
-    <Grid>
-    	<Grid.RowDefinitions>
-    		<RowDefinition Height="Auto"/>
-    		<RowDefinition/>
-    	</Grid.RowDefinitions>
-    	<TextBlock HorizontalAlignment="Center" TextWrapping="Wrap" Text="Finished!" VerticalAlignment="Center" FontSize="48" Foreground="#FFC30202" Visibility="{Binding IsFinished, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+
+	<xctk:BusyIndicator IsBusy="{Binding IsCreatingFile}" BusyContent="Creating file please wait...">
+	<Grid>
+		<Grid.RowDefinitions>
+			<RowDefinition Height="Auto"/>
+			<RowDefinition/>
+		</Grid.RowDefinitions>
+		<TextBlock HorizontalAlignment="Center" TextWrapping="Wrap" Text="Finished!" VerticalAlignment="Center" FontSize="48" Foreground="#FFC30202" Visibility="{Binding IsFinished, Converter={StaticResource BooleanToVisibilityConverter}}"/>
         
-    	<Grid Height="93" VerticalAlignment="Top" Visibility="{Binding IsProgressVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
-    		<ProgressBar Value="{Binding Progress}" HorizontalAlignment="Center" Height="25" VerticalAlignment="Center" Width="278"/>
-    		<TextBlock HorizontalAlignment="Center" TextWrapping="Wrap" Text="{Binding Progress, StringFormat='\{0\}%'}" VerticalAlignment="Bottom" Margin="0,0,0,10" FontSize="13.333" FontWeight="Bold"/>
-    	</Grid>
-    	<StackPanel Orientation="Horizontal" Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,17,0,0">
-    		<Button Command="{Binding StartCommand}" Visibility="{Binding IsStartVisible, Converter={StaticResource BooleanToVisibilityConverter}}" Content="Start" HorizontalAlignment="Right" VerticalAlignment="Top" Width="120" Height="30"/>
-    		<Button Visibility="{Binding IsPauseVisible, Converter={StaticResource BooleanToVisibilityConverter}}" Content="Pause" Width="75" Height="30"/>
-    		<Button Visibility="{Binding IsRestartVisible, Converter={StaticResource BooleanToVisibilityConverter}}"  Content="Restart" Width="75" Height="30"/>        
-    	</StackPanel>
-    	<StackPanel Orientation="Vertical" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="13,0,0,0">
-    		<Button Content="Clear Local DB" HorizontalAlignment="Right" VerticalAlignment="Center" Width="120" Command="{Binding ClearLocalDbCommand}"/>
-    		<Button Content="Clear Remote Db" HorizontalAlignment="Right" VerticalAlignment="Center" Width="120" Command="{Binding ClearRemoteDbCommand}" Margin="0,7,0,0"/>
-    	</StackPanel>
-        
-    </Grid>
+		<Grid Height="93" VerticalAlignment="Top" Visibility="{Binding IsProgressVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
+			<ProgressBar Value="{Binding Progress}" HorizontalAlignment="Center" Height="25" VerticalAlignment="Center" Width="278"/>
+			<TextBlock HorizontalAlignment="Center" TextWrapping="Wrap" Text="{Binding Progress, StringFormat=\{0\}%}" VerticalAlignment="Bottom" Margin="0,0,0,10" FontSize="13.333" FontWeight="Bold"/>
+		</Grid>
+		<StackPanel Orientation="Horizontal" Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,17,0,0">
+			<Button Command="{Binding StartCommand}" Visibility="{Binding IsStartVisible, Converter={StaticResource BooleanToVisibilityConverter}}" Content="Start" HorizontalAlignment="Right" VerticalAlignment="Top" Width="120" Height="30"/>
+			<Button Visibility="{Binding IsPauseVisible, Converter={StaticResource BooleanToVisibilityConverter}}" Content="Pause" Width="75" Height="30" Opacity="0"/>
+			<Button Visibility="{Binding IsRestartVisible, Converter={StaticResource BooleanToVisibilityConverter}}"  Content="Restart" Width="75" Height="30" Opacity="0"/>        
+		</StackPanel>
+		<StackPanel Orientation="Vertical" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="13,0,0,0">
+			<Button Content="Clear Local DB" HorizontalAlignment="Right" VerticalAlignment="Center" Width="120" Command="{Binding ClearLocalDbCommand}"/>
+			<Button Content="Clear Remote Db" HorizontalAlignment="Right" VerticalAlignment="Center" Width="120" Command="{Binding ClearRemoteDbCommand}" Margin="0,7,0,0"/>
+		</StackPanel>
+		<StackPanel HorizontalAlignment="Left" Grid.RowSpan="2" VerticalAlignment="Bottom" Orientation="Horizontal" Margin="7,0,0,53">
+			<TextBlock TextWrapping="Wrap" Text="Threads count:" FontSize="13.333"/>
+			<TextBlock TextWrapping="Wrap" Text="{Binding DownloadingThreadsCount}" FontSize="13.333" FontWeight="Bold" Margin="1,0,0,0"/>
+		</StackPanel>        		        
+	</Grid>
+  </xctk:BusyIndicator>
 </Window>

@@ -8,6 +8,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 
 namespace UploaderToHosting.ViewModel
 {
@@ -189,6 +190,20 @@ namespace UploaderToHosting.ViewModel
                 this.RaisePropertyChanged(p => p.IsUploading);
             }
         }
+
+        private int _upCount;
+        public int UploadingThreadsCount
+        {
+            get
+            {
+                return this._upCount;
+            }
+            set
+            {
+                this._upCount = value;
+                this.RaisePropertyChanged(p => p.UploadingThreadsCount);
+            }
+        }
         #endregion
 
         #region Commands
@@ -250,7 +265,7 @@ namespace UploaderToHosting.ViewModel
             if (postFileInfo)
                 service.UploadFileInfo(file, () => { });
             for (int i = 0; i < UploadingCount; i++)
-            {
+            {                
                 this.UploadPart();
             }
         }
@@ -260,44 +275,47 @@ namespace UploaderToHosting.ViewModel
         /// </summary>
         private void UploadPart()
         {
-            //lock (locking)
-            //{
-                if (!this.IsPaused)
+            if (!this.IsPaused)
+            {
+                ++currentPartIndex;
+                if (file.PartsCount >= currentPartIndex)
                 {
-                    ++currentPartIndex;
-                    if (file.PartsCount >= currentPartIndex)
+                    FilePart part = new FilePart();
+                    part.Part = currentPartIndex;
+                    part.FileName = file.FileName;
+                    part.Bytes = this.ReadFile();
+                    this.UploadingThreadsCount++;
+                    service.UploadPart(part, () =>
                     {
-                        FilePart part = new FilePart();
-                        part.Part = currentPartIndex;                        
-                        part.FileName = file.FileName;
-                        part.Bytes = this.ReadFile();
-                        service.UploadPart(part, () =>
-                        {
-                            this.Progress = (currentPartIndex * 100) / file.PartsCount;
+                        this.UploadingThreadsCount--;
+                        this.Progress = (currentPartIndex * 100) / file.PartsCount;
 
-                            this.UploadPart();
-                        });
-                    }
-                    else
-                        this.IsFinished = true;
+                        this.UploadPart();
+                    });
                 }
-            //}
+                else
+                    this.IsFinished = true;
+            }
         }       
 
         private void OnMessageRecieved(MsgData data)
         {
             if (data.Message == Messages.PauseUploading)
-            {
-                Debug.WriteLine("Paused");
+            {             
                 this.IsPaused = true;
                 this.IsUploading = false;
+                Debug.WriteLine("Uploading paused");
             }
             if (data.Message == Messages.ContinueUploading)
-            {
-                Debug.WriteLine("Unpaused");
+            {                
                 this.IsPaused = false;
                 this.IsUploading = true;
-                //this.StartUpload();
+
+                if (this.UploadingThreadsCount == 0)
+                {
+                    Debug.WriteLine("Uploading Started again");
+                    this.StartUpload();
+                }
             }
             if (data.Message == Messages.DownloadingAppReady)
             {
