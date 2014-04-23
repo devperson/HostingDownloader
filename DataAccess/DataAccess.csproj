@@ -43,7 +43,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Configurations\ClientFilePartModelConfiguration.cs" />
     <Compile Include="Configurations\FileInfoModelConfiguration.cs" />
+    <Compile Include="ClientDataBaseContext.cs" />
     <Compile Include="DataBaseContext.cs" />
     <Compile Include="Configurations\FilePartModelConfiguration.cs" />
     <Compile Include="DataBaseContextInitializer.cs" />

@@ -67,6 +67,9 @@ namespace MvcApplication1.Controllers
         {
             using (DataBaseContext context = new DataBaseContext())
             {
+                context.Configuration.AutoDetectChangesEnabled = false;
+                context.Configuration.ValidateOnSaveEnabled = false;
+
                 var part = context.Parts.FirstOrDefault(p => p.Id == id);
                 if (part != null)
                 {
@@ -90,6 +93,8 @@ namespace MvcApplication1.Controllers
         {            
             using (DataBaseContext context = new DataBaseContext())
             {
+                context.Configuration.AutoDetectChangesEnabled = false;
+                context.Configuration.ValidateOnSaveEnabled = false;
                 context.Parts.Add(newPart);
                 context.SaveChanges();
 

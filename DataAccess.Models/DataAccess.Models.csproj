@@ -39,6 +39,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ClientFilePart.cs" />
     <Compile Include="Clients.cs" />
     <Compile Include="Constants.cs" />
     <Compile Include="FileInfo.cs" />
