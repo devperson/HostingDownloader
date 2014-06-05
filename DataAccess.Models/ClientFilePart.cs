@@ -5,11 +5,10 @@ using System.Text;
 
 namespace DataAccess.Models
 {
-    public class FilePart
+    public class ClientFilePart
     {
         public long Id { get; set; }
-        public string FileName { get; set; }        
-        public byte[] Bytes { get; set; }    
+        public string FilePath { get; set; }        
         public int Part { get; set; }         
     }
 }

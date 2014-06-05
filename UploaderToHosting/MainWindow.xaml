@@ -30,9 +30,15 @@
 		<TextBlock HorizontalAlignment="Center" TextWrapping="Wrap" Text="Finished!" VerticalAlignment="Bottom" FontSize="48" Foreground="#FFC90C0C" Margin="0,0,0,26" Visibility="{Binding IsFinished, Converter={StaticResource BooleanToVisibilityConverter}}" Grid.RowSpan="2"/>
 		<TextBlock HorizontalAlignment="Center" TextWrapping="Wrap" Text="Paused!" VerticalAlignment="Bottom" FontSize="48" Foreground="#FFC90C0C" Visibility="{Binding IsPaused, Converter={StaticResource BooleanToVisibilityConverter}}" Grid.RowSpan="2" Margin="0,0,0,26"/>
 		<TextBlock HorizontalAlignment="Center" TextWrapping="Wrap" Text="Uploading!" VerticalAlignment="Bottom" FontSize="48" Foreground="#FFC90C0C"  Grid.RowSpan="2" Visibility="{Binding IsUploading, Converter={StaticResource BooleanToVisibilityConverter}}" Margin="0,0,0,26"/>
-		<StackPanel HorizontalAlignment="Left" Grid.RowSpan="2" VerticalAlignment="Top" Margin="9,77,0,0" Orientation="Horizontal">
-			<TextBlock TextWrapping="Wrap" Text="Threads count:" FontSize="13.333"/>
-			<TextBlock TextWrapping="Wrap" Text="{Binding UploadingThreadsCount}" FontSize="13.333" FontWeight="Bold" Margin="1,0,0,0"/>
+		<StackPanel Orientation="Vertical" Grid.RowSpan="2" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="2,0,0,0">
+			<StackPanel HorizontalAlignment="Left" VerticalAlignment="Top" Orientation="Horizontal">
+				<TextBlock TextWrapping="Wrap" Text="Threads count:" FontSize="13.333"/>
+				<TextBlock TextWrapping="Wrap" Text="{Binding UploadingThreadsCount}" FontSize="13.333" FontWeight="Bold" Margin="1,0,0,0"/>
+			</StackPanel>
+			<StackPanel HorizontalAlignment="Left" VerticalAlignment="Top" Orientation="Horizontal">
+				<TextBlock TextWrapping="Wrap" Text="Parts Procesed:" FontSize="13.333"/>
+				<TextBlock TextWrapping="Wrap" Text="{Binding PartsUploaded}" FontSize="13.333" FontWeight="Bold" Margin="1,0,0,0"/>
+			</StackPanel>
 		</StackPanel>
 	</Grid>
 </Window>

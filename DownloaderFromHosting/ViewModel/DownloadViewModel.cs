@@ -4,10 +4,12 @@ using DataAccess.Models;
 using GalaSoft.MvvmLight.Command;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Threading;
 
 namespace DownloaderFromHosting.ViewModel
 {
@@ -18,8 +20,7 @@ namespace DownloaderFromHosting.ViewModel
             this.IsPauseVisible = false;
             this.IsRestartVisible = false;
             this.IsStartVisible = true;
-
-            context.Database.CreateIfNotExists();
+            
             context.Configuration.AutoDetectChangesEnabled = false;
             context.Configuration.ValidateOnSaveEnabled = false;
         }
@@ -30,8 +31,7 @@ namespace DownloaderFromHosting.ViewModel
         ApiService service = new ApiService();
         DataAccess.Models.FileInfo file;
         int downloadedCount;
-        object locking = new object();
-
+        List<long> failedIds = new List<long>();        
         
         private int _progress;
         public int Progress
@@ -149,14 +149,15 @@ namespace DownloaderFromHosting.ViewModel
         {
             get { return _startCommand ?? (_startCommand = new RelayCommand(OnStartCommand)); }
         }
-        
+
+        DispatcherTimer t = new DispatcherTimer();
         private void OnStartCommand()
         {
             hubClient = new WPFHubClient(Constants.Host, Clients.Downloader, OnMessageRecieved);
             hubClient.SendMessage(new MsgData { From = Clients.Downloader, To = Clients.Uploader, Message = Messages.DownloadingAppReady });
             this.IsStartVisible = false;
             this.IsPauseVisible = true;
-            this.IsProgressVisible = true;
+            this.IsProgressVisible = true;                      
         }
         #endregion
 
@@ -204,38 +205,24 @@ namespace DownloaderFromHosting.ViewModel
                         service.RemoveFileInfo(file.Id);
                     }
                 });
+
+                t.Interval = TimeSpan.FromSeconds(5);
+                t.Tick += (s, e) =>
+                {
+                    if (this.DownloadingThreadsCount == 0 && !failedIds.Any())
+                    {
+                        hubClient.SendMessage(new MsgData { From = Clients.Downloader, To = Clients.Uploader, Message = Messages.ContinueUploading });
+                    }
+                };
+                t.Start();
             }
 
             if (data.Message.Contains(Messages.DownloadAvailable))
             {
                 this.DownloadingThreadsCount++;
-                
-                
                 long partId = long.Parse(data.Message.Replace(Messages.DownloadAvailable, ""));
-                service.GetPart(partId, (part) =>
-                {
-                    this.DownloadingThreadsCount--;
-                    downloadedCount++;
-
-                    var path = string.Format(@"{0}\{1}{2}", "Parts", part.Part, file.FileName); 
-                    ClientFilePart clientPart = new ClientFilePart();
-                    clientPart.Part = part.Part;
-                    clientPart.FilePath = path;
-                    context.Parts.Add(clientPart);
-
-                    this.WritePartToDisk(path, part);
-
-                    if (downloadedCount % 100 == 0)
-                    {
-                        context.SaveChanges();
-                        context.Dispose();
-                        context = new ClientDataBaseContext();
-                        context.Configuration.AutoDetectChangesEnabled = false;
-                        context.Configuration.ValidateOnSaveEnabled = false;
-                    }
-
-                    this.CalcProgress();
-                });
+                Debug.WriteLine(string.Format("Downloading part with id {0}", partId));
+                service.GetPart(partId, OnReceivedPart);
             }
 
             if (data.Message == Messages.UploadingAppLoaded)
@@ -247,12 +234,61 @@ namespace DownloaderFromHosting.ViewModel
             }
         }
 
+        private void OnReceivedPart(FilePart part, long id)
+        {
+            this.DownloadingThreadsCount--;
+
+            if (part != null)
+            {                                
+                Debug.WriteLine(string.Format("Part received with id {0}", id));                
+                downloadedCount++;
+
+                service.RemovePart(id);
+
+                var path = string.Format(@"{0}\{1}{2}", "Parts", part.Part, file.FileName);
+                ClientFilePart clientPart = new ClientFilePart();
+                clientPart.Part = part.Part;
+                clientPart.FilePath = path;
+                context.Parts.Add(clientPart);
+
+                this.WritePartToDisk(path, part);
+
+                if (downloadedCount % 100 == 0)
+                {
+                    context.SaveChanges();
+                    context.Dispose();
+                    context = new ClientDataBaseContext();
+                    context.Configuration.AutoDetectChangesEnabled = false;
+                    context.Configuration.ValidateOnSaveEnabled = false;
+                }
+
+                this.CalcProgress();
+            }
+            else
+            {
+                Debug.WriteLine(string.Format("Null part received with id {0}", id));
+                failedIds.Add(id);
+            }
+
+            if (this.DownloadingThreadsCount == 0)
+            {
+                var faileId = failedIds.FirstOrDefault();
+                failedIds.Remove(faileId);
+                if (faileId != 0)
+                {
+                    this.DownloadingThreadsCount++;
+                    service.GetPart(faileId, OnReceivedPart);
+                }
+            }
+        }
+
         private async void WritePartToDisk(string path, FilePart part)
         {
             await Task.Run(() =>
             {
                 if (!Directory.Exists("Parts"))
                     Directory.CreateDirectory("Parts");
+
                 File.WriteAllBytes(path, part.Bytes);
             });
         }
@@ -272,6 +308,11 @@ namespace DownloaderFromHosting.ViewModel
                 this.IsPauseVisible = false;
                 this.IsRestartVisible = false;
                 this.IsStartVisible = false;
+
+                t.Stop();
+                t.IsEnabled = false;
+
+                this.OnClearRemoteDbCommand();
             }
         }
 

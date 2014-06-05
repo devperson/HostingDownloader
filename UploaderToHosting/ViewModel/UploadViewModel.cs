@@ -14,7 +14,7 @@ namespace UploaderToHosting.ViewModel
 {
     public class UploadViewModel : ObservableObject
     {
-        private const int UploadingCount = 5;
+        private const int UploadingCount = 1;
         private const long PartSize = 1024 * 1024; //1 mb
 
         public UploadViewModel()
@@ -27,13 +27,27 @@ namespace UploaderToHosting.ViewModel
             this.IsBrawseVisible = true;                        
         }
 
-        #region Properties        
+        #region Properties         
         int currentPartIndex = 0;
         DataAccess.Models.FileInfo file;
         WPFHubClient hubClient;
         ApiService service = new ApiService();
         
-        object locking = new object();        
+        object locking = new object();       
+
+        private int partsUploaded;
+        public int PartsUploaded
+        {
+            get
+            {
+                return this.partsUploaded;
+            }
+            set
+            {
+                this.partsUploaded = value;
+                this.RaisePropertyChanged(p => p.PartsUploaded);
+            }
+        }
 
         private string _fileInfo;
         public string FilePath
@@ -263,9 +277,10 @@ namespace UploaderToHosting.ViewModel
         public void StartUpload(bool postFileInfo = false)
         {
             if (postFileInfo)
-                service.UploadFileInfo(file, () => { });
+                service.UploadFileInfo(file, () => {});
+
             for (int i = 0; i < UploadingCount; i++)
-            {                
+            {
                 this.UploadPart();
             }
         }
@@ -277,21 +292,24 @@ namespace UploaderToHosting.ViewModel
         {
             if (!this.IsPaused)
             {
-                ++currentPartIndex;
-                if (file.PartsCount >= currentPartIndex)
+                ++this.currentPartIndex;
+                if (file.PartsCount >= this.currentPartIndex)
                 {
+                    ++this.PartsUploaded;
                     FilePart part = new FilePart();
-                    part.Part = currentPartIndex;
+                    part.Part = this.currentPartIndex;
                     part.FileName = file.FileName;
                     part.Bytes = this.ReadFile();
+                    //part.BytesString = Convert.ToBase64String(bytes);                    
                     this.UploadingThreadsCount++;
                     service.UploadPart(part, () =>
                     {
                         this.UploadingThreadsCount--;
-                        this.Progress = (currentPartIndex * 100) / file.PartsCount;
+                        this.Progress = (this.currentPartIndex * 100) / file.PartsCount;
 
                         this.UploadPart();
                     });
+
                 }
                 else
                     this.IsFinished = true;
@@ -300,19 +318,19 @@ namespace UploaderToHosting.ViewModel
 
         private void OnMessageRecieved(MsgData data)
         {
-            if (data.Message == Messages.PauseUploading)
-            {             
+            if (data.Message == Messages.PauseUploading && file.PartsCount >= this.currentPartIndex)
+            {
                 this.IsPaused = true;
                 this.IsUploading = false;
                 Debug.WriteLine("Uploading paused");
             }
             if (data.Message == Messages.ContinueUploading)
-            {                
-                this.IsPaused = false;
-                this.IsUploading = true;
-
-                if (this.UploadingThreadsCount == 0)
+            {                           
+                if (this.UploadingThreadsCount == 0 && !this.IsFinished)
                 {
+                    this.IsPaused = false;
+                    this.IsUploading = true;
+
                     Debug.WriteLine("Uploading Started again");
                     this.StartUpload();
                 }
@@ -332,8 +350,8 @@ namespace UploaderToHosting.ViewModel
             {
                 using (var br = new BinaryReader(fs))
                 {
-                    br.BaseStream.Position = (currentPartIndex - 1) * file.PartSize;
-                    if (currentPartIndex == file.PartsCount)//if last chunk
+                    br.BaseStream.Position = (this.currentPartIndex - 1) * file.PartSize;
+                    if (this.currentPartIndex == file.PartsCount)//if last chunk
                     {
                         buffer = new byte[file.LastPartSize];
                         buffer = br.ReadBytes((int)file.LastPartSize);
